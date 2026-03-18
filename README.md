@@ -70,7 +70,7 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 
 
-**************INSTRUCTION DE TESTE MISE EN PLACE PAR ELVIS POUR PERMETTRE DE TESTER L'API SIMPLEMENT VIA POSTMAN****************
+## INSTRUCTION DE TESTE MISE EN PLACE PAR ELVIS POUR PERMETTRE DE TESTER L'API SIMPLEMENT VIA POSTMAN****************
  TEST 1 : INSCRIPTION
 Objectif : Créer un nouveau compte utilisateur
 Configuration : POST + Body JSON
