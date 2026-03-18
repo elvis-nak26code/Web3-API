@@ -57,3 +57,333 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+
+
+
+
+
+
+
+
+
+
+
+**************INSTRUCTION DE TESTE MISE EN PLACE PAR ELVIS POUR PERMETTRE DE TESTER L'API SIMPLEMENT VIA POSTMAN****************
+ TEST 1 : INSCRIPTION
+Objectif : Créer un nouveau compte utilisateur
+Configuration : POST + Body JSON
+
+text
+POST http://localhost:8000/api/auth/register
+Headers: Content-Type: application/json
+Body (raw JSON):
+json
+{
+    "name": "Test User",
+    "email": "test@email.com",
+    "password": "password123",
+    "password_confirmation": "password123"
+}
+✅ Résultat attendu : Status 201 avec token
+
+🔐 TEST 2 : CONNEXION
+Objectif : Se connecter avec l'utilisateur créé
+Configuration : POST + Body JSON
+
+text
+POST http://localhost:8000/api/auth/login
+Headers: Content-Type: application/json
+Body (raw JSON):
+json
+{
+    "email": "test@email.com",
+    "password": "password123"
+}
+✅ Résultat attendu : Status 200 avec token
+➡️ COPIEZ CE TOKEN pour les tests suivants
+
+🔐 TEST 3 : VOIR MON PROFIL
+Objectif : Vérifier que le token fonctionne
+Configuration : GET + Token Bearer
+
+text
+GET http://localhost:8000/api/auth/me
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200 avec vos infos
+
+🏢 TEST 4 : CRÉER UNE ENTREPRISE
+Objectif : Ajouter une entreprise dans la base
+Configuration : POST + JSON + Token
+
+text
+POST http://localhost:8000/api/companies
+Authorization: Bearer {votre_token}
+Headers: Content-Type: application/json
+Body (raw JSON):
+json
+{
+    "name": "Ma Société",
+    "email": "contact@masociete.fr",
+    "phone": "0123456789",
+    "address": "123 Rue Principale",
+    "city": "Paris",
+    "country": "France",
+    "siret": "12345678901234"
+}
+✅ Résultat attendu : Status 201
+➡️ NOTEZ L'ID (ex: 1)
+
+🏢 TEST 5 : LISTER LES ENTREPRISES
+Objectif : Voir toutes les entreprises
+Configuration : GET + Token
+
+text
+GET http://localhost:8000/api/companies
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200, liste des entreprises
+
+📊 TEST 6 : CRÉER UNE CATÉGORIE
+Objectif : Ajouter une catégorie (dépense/revenu)
+Configuration : POST + JSON + Token
+
+text
+POST http://localhost:8000/api/categories
+Authorization: Bearer {votre_token}
+Body (raw JSON):
+json
+{
+    "name": "Fournisseurs",
+    "description": "Dépenses fournisseurs",
+    "color": "#FF5733",
+    "is_active": true
+}
+✅ Résultat attendu : Status 201
+➡️ NOTEZ L'ID
+
+📄 TEST 7 : CRÉER UNE FACTURE
+Objectif : Créer une facture pour une entreprise
+Configuration : POST + JSON + Token
+
+text
+POST http://localhost:8000/api/invoices
+Authorization: Bearer {votre_token}
+Body (raw JSON):
+json
+{
+    "invoice_number": "FACT-001",
+    "company_id": 1,
+    "user_id": 1,
+    "amount": 1500.00,
+    "issue_date": "2024-03-01",
+    "due_date": "2024-03-31",
+    "status": "sent",
+    "notes": "Facture de test"
+}
+✅ Résultat attendu : Status 201
+➡️ NOTEZ L'ID
+
+💰 TEST 8 : CRÉER UNE TRANSACTION (REVENU)
+Objectif : Enregistrer un paiement reçu
+Configuration : POST + JSON + Token
+
+text
+POST http://localhost:8000/api/transactions
+Authorization: Bearer {votre_token}
+Body (raw JSON):
+json
+{
+    "reference": "TR-001",
+    "amount": 1500.00,
+    "type": "income",
+    "description": "Paiement reçu",
+    "transaction_date": "2024-03-05",
+    "category_id": 1,
+    "company_id": 1,
+    "invoice_id": 1,
+    "payment_method": "transfer"
+}
+✅ Résultat attendu : Status 201
+
+💰 TEST 9 : CRÉER UNE TRANSACTION (DÉPENSE)
+Objectif : Enregistrer une dépense
+Configuration : POST + JSON + Token
+
+text
+POST http://localhost:8000/api/transactions
+Authorization: Bearer {votre_token}
+Body (raw JSON):
+json
+{
+    "reference": "TR-002",
+    "amount": 300.00,
+    "type": "expense",
+    "description": "Achat fournitures",
+    "transaction_date": "2024-03-06",
+    "category_id": 1,
+    "company_id": 1,
+    "payment_method": "card"
+}
+✅ Résultat attendu : Status 201
+
+💰 TEST 10 : LISTER LES TRANSACTIONS
+Objectif : Voir toutes les transactions
+Configuration : GET + Token
+
+text
+GET http://localhost:8000/api/transactions
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200, liste des transactions
+
+💰 TEST 11 : STATISTIQUES DES TRANSACTIONS
+Objectif : Voir le total des revenus/dépenses
+Configuration : GET + Token
+
+text
+GET http://localhost:8000/api/transactions/stats/summary
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200 avec totaux
+
+💸 TEST 12 : CRÉER UNE DETTE
+Objectif : Enregistrer une dette à payer
+Configuration : POST + JSON + Token
+
+text
+POST http://localhost:8000/api/debts
+Authorization: Bearer {votre_token}
+Body (raw JSON):
+json
+{
+    "title": "Facture internet",
+    "amount": 500.00,
+    "remaining_amount": 500.00,
+    "due_date": "2024-04-01",
+    "company_id": 1,
+    "user_id": 1,
+    "status": "pending",
+    "description": "Abonnement internet"
+}
+✅ Résultat attendu : Status 201
+➡️ NOTEZ L'ID
+
+💸 TEST 13 : LISTER LES DETTES
+Objectif : Voir toutes les dettes
+Configuration : GET + Token
+
+text
+GET http://localhost:8000/api/debts
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200, liste des dettes
+
+💸 TEST 14 : AJOUTER UN PAIEMENT SUR UNE DETTE
+Objectif : Payer une partie d'une dette
+Configuration : POST + JSON + Token
+
+text
+POST http://localhost:8000/api/debts/1/payments
+Authorization: Bearer {votre_token}
+Body (raw JSON):
+json
+{
+    "amount": 200.00
+}
+✅ Résultat attendu : Status 200
+
+📈 TEST 15 : TABLEAU DE BORD
+Objectif : Voir les statistiques globales
+Configuration : GET + Token
+
+text
+GET http://localhost:8000/api/dashboard
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200 avec résumé
+
+⚠️ TEST 16 : VOIR LES ALERTES
+Objectif : Voir les notifications
+Configuration : GET + Token
+
+text
+GET http://localhost:8000/api/alerts
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200, liste des alertes
+
+⚠️ TEST 17 : MARQUER UNE ALERTE COMME LUE
+Objectif : Indiquer qu'on a vu l'alerte
+Configuration : PATCH + Token
+
+text
+PATCH http://localhost:8000/api/alerts/1/read
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200
+
+📊 TEST 18 : RAPPORT MENSUEL
+Objectif : Générer un rapport du mois
+Configuration : GET + Token
+
+text
+GET http://localhost:8000/api/reports/monthly
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200 avec données
+
+💡 TEST 19 : CONSEILS DE DÉPENSES
+Objectif : Recevoir des recommandations
+Configuration : GET + Token
+
+text
+GET http://localhost:8000/api/insights/spending-tips
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200 avec conseils
+
+🗑️ TEST 20 : SUPPRIMER UNE TRANSACTION
+Objectif : Effacer une transaction
+Configuration : DELETE + Token
+
+text
+DELETE http://localhost:8000/api/transactions/1
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200
+
+🚪 TEST 21 : DÉCONNEXION
+Objectif : Invalider le token
+Configuration : POST + Token
+
+text
+POST http://localhost:8000/api/auth/logout
+Authorization: Bearer {votre_token}
+✅ Résultat attendu : Status 200
+
+📝 RÉSUMÉ DES TESTS
+#	Test	Méthode	URL
+1	Inscription	POST	/api/auth/register
+2	Connexion	POST	/api/auth/login
+3	Mon profil	GET	/api/auth/me
+4	Créer entreprise	POST	/api/companies
+5	Lister entreprises	GET	/api/companies
+6	Créer catégorie	POST	/api/categories
+7	Créer facture	POST	/api/invoices
+8	Transaction (revenu)	POST	/api/transactions
+9	Transaction (dépense)	POST	/api/transactions
+10	Lister transactions	GET	/api/transactions
+11	Stats transactions	GET	/api/transactions/stats/summary
+12	Créer dette	POST	/api/debts
+13	Lister dettes	GET	/api/debts
+14	Payer dette	POST	/api/debts/1/payments
+15	Dashboard	GET	/api/dashboard
+16	Voir alertes	GET	/api/alerts
+17	Lire alerte	PATCH	/api/alerts/1/read
+18	Rapport mensuel	GET	/api/reports/monthly
+19	Conseils dépenses	GET	/api/insights/spending-tips
+20	Supprimer transaction	DELETE	/api/transactions/1
+21	Déconnexion	POST	/api/auth/logout
+✅ À SAVOIR
+Token : Après le test 2, copiez le token et mettez-le dans l'onglet "Authorization" → "Bearer Token"
+
+IDs : Notez les IDs retournés (1, 2, etc.) pour les utiliser dans les URLs suivantes
+
+Headers : Pour POST et PUT, toujours mettre Content-Type: application/json
+
+Bonne découverte de votre API ! 🚀
+
+
+
