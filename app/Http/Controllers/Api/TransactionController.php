@@ -21,12 +21,12 @@ class TransactionController extends Controller
                 return $query->where('category_id', $categoryId);
             })
             ->when($request->start_date, function ($query, $date) {
-                return $query->whereDate('date', '>=', $date);
+                return $query->whereDate('transaction_date', '>=', $date);
             })
             ->when($request->end_date, function ($query, $date) {
-                return $query->whereDate('date', '<=', $date);
+                return $query->whereDate('transaction_date', '<=', $date);
             })
-            ->latest('date')
+            ->latest('transaction_date')
             ->paginate($request->per_page ?? 15);
 
         return TransactionResource::collection($transactions);
@@ -45,23 +45,26 @@ class TransactionController extends Controller
 
         $validated['company_id'] = $request->user()->company_id;
         $validated['user_id'] = $request->user()->id;
+        $validated['transaction_date'] = $validated['date'];
+        unset($validated['date']);
         $validated['status'] = 'completed';
+
+        // Générer une référence unique
+        do {
+            $validated['reference'] = 'TXN-' . date('Y') . '-' . strtoupper(substr(md5(uniqid()), 0, 8));
+        } while (Transaction::where('reference', $validated['reference'])->exists());
+
+        \Log::info('Validated data:', $validated);
 
         $transaction = Transaction::create($validated);
 
         // Déclencher la vérification des alertes
-        $this->checkForAlerts($transaction);
+        // $this->checkForAlerts($transaction);
 
         return new TransactionResource($transaction);
     }
 
     public function show(Transaction $transaction)
-    {
-        $this->authorize('view', $transaction);
-        return new TransactionResource($transaction->load(['category', 'user']));
-    }
-
-    public function update(Request $request, Transaction $transaction)
     {
         $this->authorize('update', $transaction);
 

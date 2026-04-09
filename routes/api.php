@@ -8,22 +8,27 @@ use App\Http\Controllers\Api\{
     CategoryController,
     DebtController,
     InvoiceController,
-    ReportController,
     AlertController
 };
 
 // Routes publiques
-Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+Route::get('/test', function () {
+    return response()->json(['test' => 'ok']);
 });
+
+Route::post('/testpost', function () {
+    return response()->json(['testpost' => 'ok']);
+});
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 
 // Routes protégées (nécessitent authentification)
 Route::middleware('auth:sanctum')->group(function () {
 
     // Auth
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -53,22 +58,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/invoices/upcoming/due', [InvoiceController::class, 'upcomingDue']);
 
     // Rapports
-    Route::prefix('reports')->group(function () {
-        Route::get('/daily', [ReportController::class, 'daily']);
-        Route::get('/monthly', [ReportController::class, 'monthly']);
-        Route::get('/yearly', [ReportController::class, 'yearly']);
-        Route::get('/custom', [ReportController::class, 'custom']);
-        Route::get('/export/pdf', [ReportController::class, 'exportPdf']);
-        Route::get('/export/excel', [ReportController::class, 'exportExcel']);
-    });
-
-    // Alertes
-    Route::prefix('alerts')->group(function () {
-        Route::get('/', [AlertController::class, 'index']);
-        Route::patch('/{alert}/read', [AlertController::class, 'markAsRead']);
-        Route::post('/mark-all-read', [AlertController::class, 'markAllAsRead']);
-        Route::delete('/{alert}', [AlertController::class, 'destroy']);
-    });
+    // Route::prefix('reports')->group(function () {
+    //     Route::get('/daily', [ReportController::class, 'daily']);
+    //     Route::get('/monthly', [ReportController::class, 'monthly']);
+    //     Route::get('/yearly', [ReportController::class, 'yearly']);
+    //     Route::get('/custom', [ReportController::class, 'custom']);
+    //     Route::get('/export/pdf', [ReportController::class, 'exportPdf']);
+    //     Route::get('/export/excel', [ReportController::class, 'exportExcel']);
+    // });
 
     // Analyses intelligentes
     Route::prefix('insights')->group(function () {
@@ -76,4 +73,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/cash-flow-prediction', [DashboardController::class, 'cashFlowPrediction']);
         Route::get('/unpaid-clients', [DashboardController::class, 'unpaidClients']);
     });
+});
+
+// Alertes (temporairement publiques)
+Route::prefix('alerts')->group(function () {
+    Route::get('/', [AlertController::class, 'index']);
+    Route::patch('/{alert}/read', [AlertController::class, 'markAsRead']);
+    Route::post('/mark-all-read', [AlertController::class, 'markAllAsRead']);
+    Route::delete('/{alert}', [AlertController::class, 'destroy']);
 });

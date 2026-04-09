@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('description');
             $table->date('transaction_date');
             $table->foreignId('category_id')->nullable()->constrained();
+            $table->foreignId('user_id')->constrained();
             $table->foreignId('company_id')->nullable()->constrained();
             $table->foreignId('invoice_id')->nullable()->constrained();
             $table->string('payment_method')->nullable();

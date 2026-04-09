@@ -15,11 +15,43 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Créer des catégories par défaut pour la company 1
+        if (\App\Models\Company::find(1)) {
+            \App\Models\Category::firstOrCreate([
+                'company_id' => 1,
+                'name' => 'Ventes'
+            ], [
+                'type' => 'income',
+                'color' => '#34d399',
+                'is_active' => true
+            ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+            \App\Models\Category::firstOrCreate([
+                'company_id' => 1,
+                'name' => 'Services'
+            ], [
+                'type' => 'income',
+                'color' => '#6c8eff',
+                'is_active' => true
+            ]);
+
+            \App\Models\Category::firstOrCreate([
+                'company_id' => 1,
+                'name' => 'Achats'
+            ], [
+                'type' => 'expense',
+                'color' => '#f87171',
+                'is_active' => true
+            ]);
+
+            \App\Models\Category::firstOrCreate([
+                'company_id' => 1,
+                'name' => 'Marketing'
+            ], [
+                'type' => 'expense',
+                'color' => '#fbbf24',
+                'is_active' => true
+            ]);
+        }
     }
 }

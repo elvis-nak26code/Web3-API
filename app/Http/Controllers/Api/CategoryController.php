@@ -14,7 +14,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Category::query();
+        $query = Category::where('company_id', $request->user()->company_id);
 
         // Filtres
         if ($request->has('is_active')) {
@@ -28,8 +28,8 @@ class CategoryController extends Controller
             });
         }
 
-        // Pagination
-        $categories = $query->paginate($request->get('per_page', 15));
+        // Get all categories
+        $categories = $query->get();
 
         return response()->json([
             'success' => true,
@@ -40,9 +40,9 @@ class CategoryController extends Controller
     /**
      * Afficher une catégorie spécifique
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $category = Category::with('transactions')->find($id);
+        $category = Category::where('company_id', $request->user()->company_id)->find($id);
 
         if (!$category) {
             return response()->json([
@@ -63,7 +63,7 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:categories',
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'color' => 'nullable|string|max:7',
             'is_active' => 'boolean'
@@ -76,7 +76,10 @@ class CategoryController extends Controller
             ], 422);
         }
 
-        $category = Category::create($request->all());
+        $data = $request->all();
+        $data['company_id'] = $request->user()->company_id;
+
+        $category = Category::create($data);
 
         return response()->json([
             'success' => true,
@@ -90,7 +93,7 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $category = Category::find($id);
+        $category = Category::where('company_id', $request->user()->company_id)->find($id);
 
         if (!$category) {
             return response()->json([
@@ -125,9 +128,9 @@ class CategoryController extends Controller
     /**
      * Supprimer une catégorie
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $category = Category::find($id);
+        $category = Category::where('company_id', $request->user()->company_id)->find($id);
 
         if (!$category) {
             return response()->json([
@@ -173,6 +176,40 @@ class CategoryController extends Controller
         return response()->json([
             'success' => true,
             'data' => $categories
+        ]);
+    }
+
+    public function budgetStatus(Request $request, $id)
+    {
+        $category = Category::where('company_id', $request->user()->company_id)->find($id);
+
+        if (!$category) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Catégorie non trouvée'
+            ], 404);
+        }
+
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
+        $spent = $category->transactions()
+            ->where('type', 'expense')
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->sum('amount');
+
+        $budget = $category->budget_limit ?? 0;
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'category_id' => $category->id,
+                'budget_limit' => $budget,
+                'spent' => $spent,
+                'remaining' => $budget - $spent,
+                'percentage' => $budget > 0 ? round(($spent / $budget) * 100, 2) : 0
+            ]
         ]);
     }
 }

@@ -13,6 +13,7 @@ export default defineConfig({
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],
+            port: 3000,
         },
     },
 });

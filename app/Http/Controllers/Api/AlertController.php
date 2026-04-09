@@ -1,4 +1,3 @@
-
 <?php
 
 namespace App\Http\Controllers\Api;
@@ -16,6 +15,11 @@ class AlertController extends Controller
     public function index(Request $request)
     {
         $query = Alert::with('user');
+
+        // If authenticated, filter by company
+        if ($request->user()) {
+            $query->where('company_id', $request->user()->company_id);
+        }
 
         // Filtres
         if ($request->has('is_read')) {
@@ -35,14 +39,17 @@ class AlertController extends Controller
         $orderDir = $request->get('order_dir', 'desc');
         $query->orderBy($orderBy, $orderDir);
 
-        $alerts = $query->paginate($request->get('per_page', 15));
+        $alerts = $query->get();
 
         // Compter les non lues
-        $unreadCount = Alert::where('is_read', false)
-            ->when($request->has('user_id'), function($q) use ($request) {
-                $q->where('user_id', $request->user_id);
-            })
-            ->count();
+        $unreadCountQuery = Alert::where('is_read', false);
+        if ($request->user()) {
+            $unreadCountQuery->where('company_id', $request->user()->company_id);
+        }
+        if ($request->has('user_id')) {
+            $unreadCountQuery->where('user_id', $request->user_id);
+        }
+        $unreadCount = $unreadCountQuery->count();
 
         return response()->json([
             'success' => true,
@@ -54,9 +61,11 @@ class AlertController extends Controller
     /**
      * Afficher une alerte spécifique
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $alert = Alert::with('user')->find($id);
+        $alert = Alert::with('user')
+            ->where('company_id', $request->user()->company_id)
+            ->find($id);
 
         if (!$alert) {
             return response()->json([
@@ -92,7 +101,9 @@ class AlertController extends Controller
             ], 422);
         }
 
-        $alert = Alert::create($request->all());
+        $alert = Alert::create(array_merge($request->all(), [
+            'company_id' => $request->user()->company_id
+        ]));
 
         return response()->json([
             'success' => true,
@@ -106,7 +117,7 @@ class AlertController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $alert = Alert::find($id);
+        $alert = Alert::where('company_id', $request->user()->company_id)->find($id);
 
         if (!$alert) {
             return response()->json([
@@ -142,9 +153,9 @@ class AlertController extends Controller
     /**
      * Marquer une alerte comme lue
      */
-    public function markAsRead($id)
+    public function markAsRead(Request $request, $id)
     {
-        $alert = Alert::find($id);
+        $alert = Alert::where('company_id', $request->user()->company_id)->find($id);
 
         if (!$alert) {
             return response()->json([
@@ -169,18 +180,7 @@ class AlertController extends Controller
      */
     public function markAllAsRead(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $updated = Alert::where('user_id', $request->user_id)
+        $updated = Alert::where('company_id', $request->user()->company_id)
             ->where('is_read', false)
             ->update([
                 'is_read' => true,
@@ -199,18 +199,7 @@ class AlertController extends Controller
      */
     public function getUnreadCount(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $count = Alert::where('user_id', $request->user_id)
+        $count = Alert::where('company_id', $request->user()->company_id)
             ->where('is_read', false)
             ->count();
 
@@ -225,9 +214,9 @@ class AlertController extends Controller
     /**
      * Supprimer une alerte
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $alert = Alert::find($id);
+        $alert = Alert::where('company_id', $request->user()->company_id)->find($id);
 
         if (!$alert) {
             return response()->json([
@@ -249,18 +238,7 @@ class AlertController extends Controller
      */
     public function clearReadAlerts(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $deleted = Alert::where('user_id', $request->user_id)
+        $deleted = Alert::where('company_id', $request->user()->company_id)
             ->where('is_read', true)
             ->delete();
 

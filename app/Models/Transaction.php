@@ -13,7 +13,8 @@ class Transaction extends Model
         'type', // 'income' ou 'expense'
         'amount',
         'description',
-        'date',
+        'reference',
+        'transaction_date',
         'payment_method',
         'status', // 'pending', 'completed', 'cancelled'
         'receipt_path',
@@ -21,7 +22,7 @@ class Transaction extends Model
     ];
 
     protected $casts = [
-        'date' => 'datetime',
+        'transaction_date' => 'datetime',
         'amount' => 'decimal:2',
         'metadata' => 'array'
     ];
