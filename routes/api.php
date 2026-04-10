@@ -8,7 +8,8 @@ use App\Http\Controllers\Api\{
     CategoryController,
     DebtController,
     InvoiceController,
-    AlertController
+    AlertController,
+    ReportController
 };
 
 // Routes publiques
@@ -58,14 +59,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/invoices/upcoming/due', [InvoiceController::class, 'upcomingDue']);
 
     // Rapports
-    // Route::prefix('reports')->group(function () {
-    //     Route::get('/daily', [ReportController::class, 'daily']);
-    //     Route::get('/monthly', [ReportController::class, 'monthly']);
-    //     Route::get('/yearly', [ReportController::class, 'yearly']);
-    //     Route::get('/custom', [ReportController::class, 'custom']);
-    //     Route::get('/export/pdf', [ReportController::class, 'exportPdf']);
-    //     Route::get('/export/excel', [ReportController::class, 'exportExcel']);
-    // });
+    Route::prefix('reports')->group(function () {
+        Route::get('/daily', [ReportController::class, 'daily']);
+        Route::get('/monthly', [ReportController::class, 'monthly']);
+        Route::get('/yearly', [ReportController::class, 'yearly']);
+        Route::get('/custom', [ReportController::class, 'custom']);
+        Route::get('/export/pdf', [ReportController::class, 'exportPdf']);
+        Route::get('/export/excel', [ReportController::class, 'exportExcel']);
+    });
 
     // Analyses intelligentes
     Route::prefix('insights')->group(function () {

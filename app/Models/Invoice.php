@@ -8,6 +8,7 @@ class Invoice extends Model
 {
     protected $fillable = [
         'company_id',
+        'user_id',
         'type', // 'incoming' (facture client) ou 'outgoing' (facture fournisseur)
         'invoice_number',
         'contact_name',
@@ -15,6 +16,7 @@ class Invoice extends Model
         'amount_ht',
         'amount_ttc',
         'vat_amount',
+        'amount',
         'issue_date',
         'due_date',
         'status', // 'draft', 'sent', 'paid', 'overdue', 'cancelled'
@@ -33,5 +35,15 @@ class Invoice extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
     }
 }

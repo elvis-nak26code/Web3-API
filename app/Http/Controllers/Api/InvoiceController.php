@@ -86,8 +86,6 @@ class InvoiceController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'invoice_number' => 'required|string|max:255|unique:invoices',
-            'company_id' => 'required|exists:companies,id',
-            'user_id' => 'required|exists:users,id',
             'amount' => 'required|numeric|min:0',
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issue_date',
@@ -102,7 +100,13 @@ class InvoiceController extends Controller
             ], 422);
         }
 
-        $invoice = Invoice::create($request->all());
+        $user = $request->user();
+        $data = array_merge($request->all(), [
+            'company_id' => $user->company_id,
+            'user_id' => $user->id,
+        ]);
+
+        $invoice = Invoice::create($data);
 
         return response()->json([
             'success' => true,

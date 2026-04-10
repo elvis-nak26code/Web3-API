@@ -95,8 +95,6 @@ class DebtController extends Controller
             'amount' => 'required|numeric|min:0',
             'remaining_amount' => 'required|numeric|min:0',
             'due_date' => 'required|date',
-            'company_id' => 'nullable|exists:companies,id',
-            'user_id' => 'required|exists:users,id',
             'status' => 'required|in:pending,paid,overdue',
             'description' => 'nullable|string'
         ]);
@@ -108,8 +106,20 @@ class DebtController extends Controller
             ], 422);
         }
 
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non authentifié'
+            ], 401);
+        }
+
         // Ajuster automatiquement le statut si la date est dépassée
-        $data = $request->all();
+        $data = array_merge($request->all(), [
+            'company_id' => $user->company_id,
+            'user_id' => $user->id,
+        ]);
+
         if (strtotime($data['due_date']) < time() && $data['status'] == 'pending') {
             $data['status'] = 'overdue';
         }
